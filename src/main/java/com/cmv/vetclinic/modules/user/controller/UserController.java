@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cmv.vetclinic.modules.user.dto.UserRequest;
 import com.cmv.vetclinic.modules.user.dto.UserResponse;
+import com.cmv.vetclinic.modules.user.dto.UserUpdateRequest;
 import com.cmv.vetclinic.modules.user.service.UserService;
 
 import jakarta.validation.Valid;
@@ -12,11 +13,11 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,6 +56,12 @@ public class UserController {
     @PutMapping("/{id}")
     public UserResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
         return userService.updateUser(id, request);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}")
+    public UserResponse updatePartialUser(@PathVariable Long id, @RequestBody UserUpdateRequest request) {
+        return userService.updatePartialUser(id, request);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

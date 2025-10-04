@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cmv.vetclinic.modules.user.dto.UserRequest;
 import com.cmv.vetclinic.modules.user.dto.UserResponse;
+import com.cmv.vetclinic.modules.user.dto.UserUpdateRequest;
 
 public interface UserService {
 
@@ -16,6 +17,8 @@ public interface UserService {
     List<UserResponse> getAllUsers();
 
     UserResponse updateUser(Long id, UserRequest request);
+
+    UserResponse updatePartialUser(Long id, UserUpdateRequest request);
 
     void deleteUser(Long id);
 
