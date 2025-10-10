@@ -1,8 +1,12 @@
 package com.cmv.vetclinic.modules.blog.controller;
 
-import java.util.List;
-
 import org.springframework.http.MediaType;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,8 +44,18 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
-        List<PostResponse> posts = postService.getAllPosts();
+    public ResponseEntity<Page<PostResponse>> getAllPosts(
+            @RequestParam(required = false) Long authorId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        LocalDateTime from = fromDate != null ? fromDate.atStartOfDay() : null;
+        LocalDateTime to = toDate != null ? toDate.atTime(23, 59, 59) : null;
+
+        Page<PostResponse> posts = postService.getAllPosts(authorId, status, keyword, from, to, page, size);
         return ResponseEntity.ok(posts);
     }
 

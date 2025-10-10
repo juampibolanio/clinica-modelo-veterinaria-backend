@@ -1,10 +1,15 @@
 package com.cmv.vetclinic.modules.blog.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.cmv.vetclinic.config.cloudinary.CloudinaryService;
@@ -32,8 +37,8 @@ import org.slf4j.LoggerFactory;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PostServiceImpl implements PostService{
-    
+public class PostServiceImpl implements PostService {
+
     private static final Logger log = LoggerFactory.getLogger(PostServiceImpl.class);
 
     private final PostRepository postRepository;
@@ -101,20 +106,37 @@ public class PostServiceImpl implements PostService{
         }
     }
 
-
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse> getAllPosts() {
-        return postRepository.findAll().stream()
-                    .map(postMapper::toResponse)
-                    .toList();
+    public Page<PostResponse> getAllPosts(
+            Long authorId,
+            String status,
+            String keyword,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("publicationDate").descending());
+        Specification<Post> spec = (Specification<Post>) (root, query, criteriaBuilder) -> null;
+
+        if (authorId != null)
+            spec = spec.and(PostSpecification.hasAuthor(authorId));
+        if (keyword != null && !keyword.isEmpty())
+            spec = spec.and(PostSpecification.textContains(keyword));
+        if (fromDate != null && toDate != null)
+            spec = spec.and(PostSpecification.dateBetween(fromDate, toDate));
+
+        @SuppressWarnings("unchecked")
+        Page<Post> postsPage = postRepository.findAll(spec, pageable);
+        return postsPage.map(postMapper::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findById(id)
-                    .orElseThrow(() -> new PostNotFoundException(id));
+                .orElseThrow(() -> new PostNotFoundException(id));
         return postMapper.toResponse(post);
     }
 
@@ -122,11 +144,7 @@ public class PostServiceImpl implements PostService{
     @Transactional
     public PostResponse updatePost(Long id, PostRequest request, MultipartFile[] newImages, String username) {
         Post existing = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-
-        if (!existing.getAuthor().getUsername().equals(username)) {
-            throw new RuntimeException("You are not allowed to update this post");
-        }
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         existing.setTitle(request.getTitle());
         existing.setSubtitle(request.getSubtitle());
@@ -135,14 +153,14 @@ public class PostServiceImpl implements PostService{
         List<CloudinaryUploadResult> uploads = new ArrayList<>();
 
         try {
-            
+
             if (newImages != null && newImages.length > 0) {
-                
+
                 for (PostImage oldImg : existing.getImages()) {
                     try {
                         cloudinaryService.deleteFile(oldImg.getPublicId());
                     } catch (IOException e) {
-                        log.warn("No se pudo eliminar imagen vieja: {}", oldImg.getPublicId());
+                        log.warn("Could not delete old image: {}", oldImg.getPublicId());
                     }
                 }
 
@@ -193,11 +211,7 @@ public class PostServiceImpl implements PostService{
     @Transactional
     public void deletePost(Long id, String username) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-
-        if (!post.getAuthor().getUsername().equals(username)) {
-            throw new RuntimeException("You are not allowed to delete this post");
-        }
+                .orElseThrow(() -> new PostNotFoundException(id));
 
         for (PostImage img : post.getImages()) {
             try {

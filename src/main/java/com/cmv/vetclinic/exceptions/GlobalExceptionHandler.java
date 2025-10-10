@@ -1,5 +1,8 @@
 package com.cmv.vetclinic.exceptions;
 
+import com.cmv.vetclinic.exceptions.BlogExceptions.ImageUploadException;
+import com.cmv.vetclinic.exceptions.BlogExceptions.UnauthorizedPostAccessException;
+import com.cmv.vetclinic.exceptions.PostExceptions.PostNotFoundException;
 import com.cmv.vetclinic.exceptions.UserExceptions.EmailAlreadyExistsException;
 import com.cmv.vetclinic.exceptions.UserExceptions.InvalidUserStateException;
 import com.cmv.vetclinic.exceptions.UserExceptions.UserNotFoundException;
@@ -34,6 +37,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
+    // Post exceptions
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handlePostNotFound(PostNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<Map<String, Object>> handleImageUpload(ImageUploadException ex) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedPostAccessException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedPostAccessException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String message) {

@@ -1,7 +1,8 @@
 package com.cmv.vetclinic.modules.blog.service;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cmv.vetclinic.modules.blog.dto.PostRequest;
@@ -11,7 +12,13 @@ public interface PostService {
     
     PostResponse createPost(PostRequest request, MultipartFile[] images, String username);
 
-    List<PostResponse> getAllPosts();
+    Page<PostResponse> getAllPosts(Long authorId,
+            String status,
+            String keyword,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            int page,
+            int size);
 
     PostResponse getPostById(Long id);
 

@@ -37,6 +37,7 @@ public class AuthServiceImpl implements AuthService{
 
         return new AuthResponse(
                         token, 
+                        userResp.getId(),
                         userResp.getUsername(), 
                         userResp.getName(), 
                         userResp.getSurname(), 
@@ -67,6 +68,7 @@ public class AuthServiceImpl implements AuthService{
 
         return new AuthResponse(
                             token, 
+                            userResp.getId(),
                             userResp.getUsername(), 
                             userResp.getName(), 
                             userResp.getSurname(), 
