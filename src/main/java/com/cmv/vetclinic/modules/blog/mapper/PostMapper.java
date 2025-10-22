@@ -13,7 +13,7 @@ public interface PostMapper {
     
     PostMapper INSTANCE = Mappers.getMapper(PostMapper.class);
 
-    @Mapping(source = "author.name", target = "authorName")
+    @Mapping(target = "authorFullName", expression = "java(post.getAuthor() != null ? post.getAuthor().getFullName() : null)")
     PostResponse toResponse(Post post);
 
     @Mapping(target = "id", ignore = true)

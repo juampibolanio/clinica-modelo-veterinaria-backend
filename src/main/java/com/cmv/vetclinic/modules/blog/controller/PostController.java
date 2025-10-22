@@ -46,7 +46,6 @@ public class PostController {
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(
             @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
@@ -55,7 +54,7 @@ public class PostController {
         LocalDateTime from = fromDate != null ? fromDate.atStartOfDay() : null;
         LocalDateTime to = toDate != null ? toDate.atTime(23, 59, 59) : null;
 
-        Page<PostResponse> posts = postService.getAllPosts(authorId, status, keyword, from, to, page, size);
+        Page<PostResponse> posts = postService.getAllPosts(authorId, keyword, from, to, page, size);
         return ResponseEntity.ok(posts);
     }
 

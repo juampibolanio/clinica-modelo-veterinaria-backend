@@ -13,7 +13,6 @@ public interface PostService {
     PostResponse createPost(PostRequest request, MultipartFile[] images, String username);
 
     Page<PostResponse> getAllPosts(Long authorId,
-            String status,
             String keyword,
             LocalDateTime fromDate,
             LocalDateTime toDate,

@@ -7,8 +7,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -110,14 +112,15 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getAllPosts(
             Long authorId,
-            String status,
             String keyword,
             LocalDateTime fromDate,
             LocalDateTime toDate,
             int page,
             int size) {
+
         Pageable pageable = PageRequest.of(page, size,
-                org.springframework.data.domain.Sort.by("publicationDate").descending());
+                Sort.by("publicationDate").descending());
+
         Specification<Post> spec = (Specification<Post>) (root, query, criteriaBuilder) -> null;
 
         if (authorId != null)
@@ -129,7 +132,12 @@ public class PostServiceImpl implements PostService {
 
         @SuppressWarnings("unchecked")
         Page<Post> postsPage = postRepository.findAll(spec, pageable);
-        return postsPage.map(postMapper::toResponse);
+
+        List<PostResponse> dtos = postsPage.stream()
+                .map(postMapper::toResponse)
+                .toList();
+
+        return new PageImpl<>(dtos, pageable, postsPage.getTotalElements());
     }
 
     @Override

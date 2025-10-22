@@ -20,7 +20,7 @@ public class PostResponse {
     private String title;
     private String subtitle;
     private String content;
-    private String authorName;
+    private String authorFullName;
     private LocalDateTime publicationDate;
     private List<PostImageResponse> images;
 }
