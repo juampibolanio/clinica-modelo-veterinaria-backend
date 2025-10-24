@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService{
             throw new InvalidUsernamePasswordException();
         }
 
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
         UserResponse userResp = userMapper.toResponse(user);
 
         return new AuthResponse(
