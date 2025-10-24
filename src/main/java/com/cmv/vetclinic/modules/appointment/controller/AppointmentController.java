@@ -1,6 +1,7 @@
 package com.cmv.vetclinic.modules.appointment.controller;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -63,6 +65,14 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponse> update(@PathVariable Long id,
             @Valid @RequestBody AppointmentRequest req) {
         return ResponseEntity.ok(appointmentService.update(id, req));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<AppointmentResponse> patch(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> updates) {
+        return ResponseEntity.ok(appointmentService.patch(id, updates));
     }
 
     @DeleteMapping("/{id}")

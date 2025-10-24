@@ -28,11 +28,28 @@ public interface AppointmentMapper {
     AppointmentResponse toResponse(Appointment appt);
 
     default AppointmentStatus mapStatus(String s) {
-        if (s == null || s.isBlank()) return AppointmentStatus.PENDING;
-        try { return AppointmentStatus.valueOf(s.toUpperCase()); }
-        catch (IllegalArgumentException e){ return AppointmentStatus.PENDING; }
+        if (s == null || s.isBlank())
+            return AppointmentStatus.PENDING;
+        try {
+            return AppointmentStatus.valueOf(s.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return AppointmentStatus.PENDING;
+        }
     }
 
-    default String fullName(User u){ return (u==null)?null:(u.getName()+" "+u.getSurname()); }
-    default String ownerFullName(Owner o){ return (o==null)?null:(o.getName()+" "+o.getSurname()); }
+    default String fullName(User u) {
+        if (u == null)
+            return null;
+        String name = u.getName() != null ? u.getName() : "";
+        String surname = u.getSurname() != null ? u.getSurname() : "";
+        return (name + " " + surname).trim();
+    }
+
+    default String ownerFullName(Owner o) {
+        if (o == null)
+            return null;
+        String name = o.getName() != null ? o.getName() : "";
+        String surname = o.getSurname() != null ? o.getSurname() : "";
+        return (name + " " + surname).trim();
+    }
 }

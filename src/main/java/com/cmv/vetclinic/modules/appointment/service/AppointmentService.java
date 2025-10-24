@@ -14,6 +14,8 @@ public interface AppointmentService {
 
     AppointmentResponse update(Long id, AppointmentRequest request);
 
+    AppointmentResponse patch(Long id, java.util.Map<String, Object> updates);
+
     void delete(Long id);
 
     Page<AppointmentResponse> list(Integer page, Integer size, String sortBy, String direction,
