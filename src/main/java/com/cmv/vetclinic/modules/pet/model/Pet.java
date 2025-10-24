@@ -28,14 +28,14 @@ public class Pet {
     private Long id;
 
     @NotBlank(message = "Name is required")
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 255)
     private String name;
 
     @NotBlank(message = "Species is required")
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 255)
     private String species;
 
-    @Column(length = 100)
+    @Column(length = 255)
     private String breed;
 
     @NotNull(message = "Birth date is required")
@@ -50,14 +50,16 @@ public class Pet {
     @Builder.Default
     private Genders gender = Genders.MALE;
 
+    @Column(length = 255)
     private String color;
 
     @NotNull(message = "Weight is required")
-    @Positive(message = "Weight must be greater than zero")
+    @PositiveOrZero(message = "Weight must be greater than or equal to zero")
     @Column(nullable = false)
     @Builder.Default
     private Double weight = 0.0;
 
+    @Column(length = 255)
     private String allergies;
 
     @ManyToOne(fetch = FetchType.LAZY)

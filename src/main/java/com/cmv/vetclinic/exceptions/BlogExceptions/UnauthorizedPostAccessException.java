@@ -1,7 +1,11 @@
 package com.cmv.vetclinic.exceptions.BlogExceptions;
 
-public class UnauthorizedPostAccessException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import com.cmv.vetclinic.exceptions.BaseApiException;
+
+public class UnauthorizedPostAccessException extends BaseApiException {
     public UnauthorizedPostAccessException() {
-        super("No tiene permiso para modificar o eliminar este post");
+        super("You are not authorized to access this post", HttpStatus.FORBIDDEN);
     }
 }

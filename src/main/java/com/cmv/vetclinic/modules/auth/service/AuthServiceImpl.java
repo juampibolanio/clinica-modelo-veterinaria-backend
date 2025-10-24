@@ -3,6 +3,7 @@ package com.cmv.vetclinic.modules.auth.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.cmv.vetclinic.exceptions.UserExceptions.InvalidUsernamePasswordException;
 import com.cmv.vetclinic.modules.auth.dto.AuthRequest;
 import com.cmv.vetclinic.modules.auth.dto.AuthResponse;
 import com.cmv.vetclinic.modules.auth.dto.RegisterRequest;
@@ -29,7 +30,7 @@ public class AuthServiceImpl implements AuthService{
         User user = userRepository.findByUsername(request.getUsername());
         
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new InvalidUsernamePasswordException();
         }
 
         String token = jwtUtil.generateToken(user.getUsername());
@@ -47,6 +48,7 @@ public class AuthServiceImpl implements AuthService{
                     );
 
     }
+    
     @Override
     public AuthResponse register(RegisterRequest request) {
         

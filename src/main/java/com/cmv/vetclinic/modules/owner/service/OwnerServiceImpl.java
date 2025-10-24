@@ -11,6 +11,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.cmv.vetclinic.exceptions.OwnerExceptions.InvalidOwnerDataException;
+import com.cmv.vetclinic.exceptions.OwnerExceptions.OwnerNotFoundException;
 import com.cmv.vetclinic.modules.owner.dto.OwnerRequest;
 import com.cmv.vetclinic.modules.owner.dto.OwnerResponse;
 import com.cmv.vetclinic.modules.owner.mapper.OwnerMapper;
@@ -29,6 +31,14 @@ public class OwnerServiceImpl implements OwnerService {
         private final OwnerMapper ownerMapper;
 
         public OwnerResponse createOwner(OwnerRequest request) {
+                if (request.getEmail() != null && !request.getEmail().contains("@")) {
+                        throw new InvalidOwnerDataException("Email format is invalid");
+                }
+
+                if (request.getPhoneNumber() != null && !request.getPhoneNumber().matches("\\+?\\d{7,15}")) {
+                        throw new InvalidOwnerDataException("Phone number format is invalid");
+                }
+
                 Owner owner = Owner.builder()
                                 .name(request.getName())
                                 .surname(request.getSurname())
@@ -45,7 +55,7 @@ public class OwnerServiceImpl implements OwnerService {
         @Override
         public OwnerResponse getOwnerById(Long id) {
                 Owner owner = ownerRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                                .orElseThrow(() -> new OwnerNotFoundException(id));
 
                 return ownerMapper.toResponse(owner);
         }
@@ -71,8 +81,17 @@ public class OwnerServiceImpl implements OwnerService {
 
         @Override
         public OwnerResponse updateOwner(Long id, OwnerRequest request) {
+
+                if (request.getEmail() != null && !request.getEmail().contains("@")) {
+                        throw new InvalidOwnerDataException("Email format is invalid");
+                }
+
+                if (request.getPhoneNumber() != null && !request.getPhoneNumber().matches("\\+?\\d{7,15}")) {
+                        throw new InvalidOwnerDataException("Phone number format is invalid");
+                }
+
                 Owner owner = ownerRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                                .orElseThrow(() -> new OwnerNotFoundException(id));
 
                 owner.setName(request.getName());
                 owner.setSurname(request.getSurname());
@@ -89,7 +108,7 @@ public class OwnerServiceImpl implements OwnerService {
         @Transactional
         public OwnerResponse partialUpdateOwner(Long id, Map<String, Object> updates) {
                 Owner owner = ownerRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                                .orElseThrow(() -> new OwnerNotFoundException(id));
 
                 updates.forEach((key, value) -> {
                         switch (key) {
@@ -101,7 +120,7 @@ public class OwnerServiceImpl implements OwnerService {
                                 case "documentNumber" -> owner.setDocumentNumber((String) value);
                                 case "totalDebt" -> owner.setTotalDebt(Double.valueOf(value.toString()));
                                 default -> {
-                                       // ignore unknown fields
+                                        // ignore unknown fields
                                 }
                         }
                 });
@@ -112,7 +131,7 @@ public class OwnerServiceImpl implements OwnerService {
         @Override
         public void deleteOwner(Long id) {
                 Owner owner = ownerRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                                .orElseThrow(() -> new OwnerNotFoundException(id));
                 ownerRepository.delete(owner);
         }
 

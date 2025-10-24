@@ -1,7 +1,11 @@
 package com.cmv.vetclinic.exceptions.UserExceptions;
 
-public class UsernameAlreadyExists extends RuntimeException{
+import org.springframework.http.HttpStatus;
+
+import com.cmv.vetclinic.exceptions.BaseApiException;
+
+public class UsernameAlreadyExists extends BaseApiException {
     public UsernameAlreadyExists(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }

@@ -1,7 +1,11 @@
 package com.cmv.vetclinic.exceptions.UserExceptions;
 
-public class InvalidUserStateException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import com.cmv.vetclinic.exceptions.BaseApiException;
+
+public class InvalidUserStateException extends BaseApiException {
     public InvalidUserStateException(String message) {
-        super(message);
+        super(message, HttpStatus.BAD_REQUEST);
     }
 }

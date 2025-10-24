@@ -1,7 +1,11 @@
 package com.cmv.vetclinic.exceptions.UserExceptions;
 
-public class EmailAlreadyExistsException extends RuntimeException{
+import org.springframework.http.HttpStatus;
+
+import com.cmv.vetclinic.exceptions.BaseApiException;
+
+public class EmailAlreadyExistsException extends BaseApiException {
     public EmailAlreadyExistsException(String message){
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }

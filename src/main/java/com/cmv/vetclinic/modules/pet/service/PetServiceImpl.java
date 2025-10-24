@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.cmv.vetclinic.exceptions.OwnerExceptions.OwnerNotFoundException;
+import com.cmv.vetclinic.exceptions.PetExceptions.InvalidPetDataException;
+import com.cmv.vetclinic.exceptions.PetExceptions.PetNotFoundException;
+import com.cmv.vetclinic.exceptions.PetExceptions.PetsForOwnerNotFoundException;
 import com.cmv.vetclinic.modules.owner.model.Owner;
 import com.cmv.vetclinic.modules.owner.repository.OwnerRepository;
 import com.cmv.vetclinic.modules.pet.dto.PetRequest;
@@ -36,7 +40,15 @@ public class PetServiceImpl implements PetService {
     @Override
     public PetResponse createPet(PetRequest request) {
         Owner owner = ownerRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                .orElseThrow(() -> new OwnerNotFoundException(request.getOwnerId()));
+
+        if (request.getBirthDate().isAfter(LocalDate.now())) {
+            throw new InvalidPetDataException("Birth date cannot be in the future");
+        }
+
+        if (request.getWeight() < 0) {
+            throw new InvalidPetDataException("Weight cannot be negative");
+        }
 
         Pet pet = petMapper.toEntity(request);
         pet.setOwner(owner);
@@ -49,7 +61,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public PetResponse getPetById(Long id) {
         Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pet not found"));
+                .orElseThrow(() -> new PetNotFoundException(id));
         return petMapper.toResponse(pet);
     }
 
@@ -97,12 +109,12 @@ public class PetServiceImpl implements PetService {
     @Override
     public List<PetResponse> getPetsByOwnerId(Long ownerId) {
         Owner owner = ownerRepository.findById(ownerId)
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                .orElseThrow(() -> new OwnerNotFoundException(ownerId));
 
         List<Pet> pets = petRepository.findAllByOwnerId(owner.getId());
 
         if (pets.isEmpty()) {
-            throw new RuntimeException("No pets found for this owner");
+            throw new PetsForOwnerNotFoundException(ownerId);
         }
 
         return pets.stream()
@@ -112,8 +124,17 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public PetResponse updatePet(Long id, PetRequest request) {
+
+        if (request.getBirthDate().isAfter(LocalDate.now())) {
+            throw new InvalidPetDataException("Birth date cannot be in the future");
+        }
+
+        if (request.getWeight() < 0) {
+            throw new InvalidPetDataException("Weight cannot be negative");
+        }
+
         Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pet not found"));
+                .orElseThrow(() -> new PetNotFoundException(id));
 
         pet.setName(request.getName());
         pet.setSpecies(request.getSpecies());
@@ -127,7 +148,7 @@ public class PetServiceImpl implements PetService {
 
         if (!pet.getOwner().getId().equals(request.getOwnerId())) {
             Owner owner = ownerRepository.findById(request.getOwnerId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
+                    .orElseThrow(() -> new OwnerNotFoundException(request.getOwnerId()));
             pet.setOwner(owner);
         }
 
@@ -139,7 +160,7 @@ public class PetServiceImpl implements PetService {
     @Transactional
     public PetResponse partialUpdatePet(Long id, Map<String, Object> updates) {
         Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pet not found"));
+                .orElseThrow(() -> new PetNotFoundException(id));
 
         updates.forEach((key, value) -> {
             switch (key) {
@@ -175,7 +196,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public void deletePet(Long id) {
         Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pet not found"));
+                .orElseThrow(() -> new PetNotFoundException(id));
         petRepository.delete(pet);
     }
 

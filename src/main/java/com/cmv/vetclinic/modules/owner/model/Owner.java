@@ -16,6 +16,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,6 +53,7 @@ public class Owner {
     @Column(nullable = false, length = 100)
     private String surname;
 
+    @Pattern(regexp = "\\+?\\d{7,15}", message = "Phone number format is invalid")
     @Column(length = 20, unique = true)
     private String phoneNumber;
 
@@ -62,6 +65,7 @@ public class Owner {
     private String address;
 
     @Column(nullable = false)
+    @PositiveOrZero(message = "Total debt cannot be negative")
     @Builder.Default
     private Double totalDebt = 0.0;
 
