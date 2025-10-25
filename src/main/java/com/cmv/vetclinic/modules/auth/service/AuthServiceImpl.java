@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService{
 
         User savedUser = userRepository.save(user);
 
-        String token = jwtUtil.generateToken(savedUser.getUsername());
+        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getRole().name());
 
         UserResponse userResp = userMapper.toResponse(savedUser);
 
