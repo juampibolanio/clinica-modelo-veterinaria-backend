@@ -1,0 +1,67 @@
+package com.cmv.vetclinic.modules.veterinaryStats.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentCount;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsPerOwner;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.TopDiagnosis;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.TopProduct;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.VaccinesPerMonth;
+import com.cmv.vetclinic.modules.veterinaryStats.service.VeterinaryStatsService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/stats")
+@RequiredArgsConstructor
+public class VeterinaryStatsController {
+
+    private final VeterinaryStatsService service;
+
+    // STAT-01
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/appointments-per-vet")
+    public ResponseEntity<List<AppointmentCount>> appointmentsPerVet(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(service.getAppointmentsPerVet(limit));
+    }
+
+    // STAT-02
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/vaccines-per-month")
+    public ResponseEntity<List<VaccinesPerMonth>> vaccinesPerMonth(
+            @RequestParam(required = false) Integer year) {
+        return ResponseEntity.ok(service.getVaccinesPerMonth(year));
+    }
+
+    // STAT-03
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/top-products")
+    public ResponseEntity<List<TopProduct>> topProducts(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(service.getTopProducts(limit));
+    }
+
+    // STAT-04 (solo ADMIN)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/pets-per-owner")
+    public ResponseEntity<List<PetsPerOwner>> petsPerOwner(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(service.getPetsPerOwner(limit));
+    }
+
+    // STAT-05
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/top-diagnoses")
+    public ResponseEntity<List<TopDiagnosis>> topDiagnoses(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(service.getTopDiagnoses(limit));
+    }
+}
