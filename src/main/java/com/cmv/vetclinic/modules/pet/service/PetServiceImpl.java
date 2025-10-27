@@ -113,9 +113,6 @@ public class PetServiceImpl implements PetService {
 
         List<Pet> pets = petRepository.findAllByOwnerId(owner.getId());
 
-        if (pets.isEmpty()) {
-            throw new PetsForOwnerNotFoundException(ownerId);
-        }
 
         return pets.stream()
                 .map(petMapper::toResponse)

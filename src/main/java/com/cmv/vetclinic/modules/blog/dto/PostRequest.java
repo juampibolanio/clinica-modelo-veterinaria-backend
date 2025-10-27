@@ -29,4 +29,5 @@ public class PostRequest {
     
     private List<String> imageDescriptions;
 
+    private List<Long> keepImageIds;
 }
