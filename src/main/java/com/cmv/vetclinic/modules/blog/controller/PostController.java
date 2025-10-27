@@ -4,6 +4,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -72,6 +73,49 @@ public class PostController {
             @AuthenticationPrincipal UserDetails userDetails) {
 
         PostResponse updated = postService.updatePost(id, request, images, userDetails.getUsername());
+        return ResponseEntity.ok(updated);
+    }
+
+    // PATCH PARCIAL (solo texto y descripciones)
+    @PatchMapping("/{id}")
+    public ResponseEntity<PostResponse> patchPost(
+            @PathVariable Long id,
+            @RequestBody PostRequest partialRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        PostResponse updated = postService.patchPost(id, partialRequest, userDetails.getUsername());
+        return ResponseEntity.ok(updated);
+    }
+
+    // PUT DE IMÁGENES (agregar / eliminar / modificar)
+    @PutMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostResponse> updateImages(
+            @PathVariable Long id,
+            @RequestPart(value = "newImages", required = false) MultipartFile[] newImages,
+            @RequestParam(value = "keepImageIds", required = false) List<Long> keepImageIds,
+            @RequestParam(value = "descriptions", required = false) List<String> descriptions,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        System.out.println("🟢 updateImages -> ID=" + id);
+        System.out.println("keepImageIds: " + keepImageIds);
+        System.out.println("descriptions: " + descriptions);
+        System.out.println("newImages: " + (newImages != null ? newImages.length : 0));
+
+        // Evitar nulls
+        if (keepImageIds == null)
+            keepImageIds = List.of();
+        if (descriptions == null)
+            descriptions = List.of();
+        if (newImages == null)
+            newImages = new MultipartFile[0];
+
+        PostResponse updated = postService.updateImages(
+                id,
+                newImages,
+                keepImageIds,
+                descriptions,
+                userDetails.getUsername());
+
         return ResponseEntity.ok(updated);
     }
 

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.cmv.vetclinic.config.cloudinary.CloudinaryService;
 import com.cmv.vetclinic.exceptions.PostExceptions.PostNotFoundException;
+import com.cmv.vetclinic.exceptions.PostExceptions.UnauthorizedActionException;
 import com.cmv.vetclinic.exceptions.UserExceptions.UserNotFoundException;
 import com.cmv.vetclinic.modules.blog.dto.CloudinaryUploadResult;
 import com.cmv.vetclinic.modules.blog.dto.PostRequest;
@@ -214,6 +215,103 @@ public class PostServiceImpl implements PostService {
             throw new RuntimeException("Error updating post: " + e.getMessage(), e);
         }
     }
+
+    @Transactional
+    public PostResponse patchPost(Long id, PostRequest request, String username) {
+        Post existing = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException(id));
+
+        // Validar autor
+        if (!existing.getAuthor().getUsername().equals(username)) {
+            throw new UnauthorizedActionException("You are not allowed to update this post");
+        }
+
+        // === Actualizar solo campos presentes ===
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            existing.setTitle(request.getTitle());
+        }
+        if (request.getSubtitle() != null) {
+            existing.setSubtitle(request.getSubtitle());
+        }
+        if (request.getContent() != null && !request.getContent().isBlank()) {
+            existing.setContent(request.getContent());
+        }
+
+        // Actualizar descripciones de imágenes
+        if (request.getImageDescriptions() != null && !request.getImageDescriptions().isEmpty()) {
+            List<PostImage> images = existing.getImages();
+            for (int i = 0; i < Math.min(images.size(), request.getImageDescriptions().size()); i++) {
+                images.get(i).setDescription(request.getImageDescriptions().get(i));
+            }
+        }
+
+        Post saved = postRepository.save(existing);
+        return postMapper.toResponse(saved);
+    }
+
+    @Override
+@Transactional
+public PostResponse updateImages(
+        Long postId,
+        MultipartFile[] newImages,
+        List<Long> keepImageIds,
+        List<String> descriptions,
+        String username) {
+
+    Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new PostNotFoundException(postId));
+
+    // Validar permisos
+    if (!post.getAuthor().getUsername().equals(username)) {
+        throw new RuntimeException("No autorizado para editar este post");
+    }
+
+    // 🧹 1. Eliminar las imágenes que ya no deben mantenerse
+    List<PostImage> toRemove = post.getImages().stream()
+            .filter(img -> !keepImageIds.contains(img.getId()))
+            .toList();
+
+    for (PostImage img : toRemove) {
+        try {
+            cloudinaryService.deleteFile(img.getPublicId());
+        } catch (IOException e) {
+            System.err.println("⚠️ Error eliminando imagen de Cloudinary: " + e.getMessage());
+        }
+        postImageRepository.delete(img);
+    }
+
+    // ✏️ 2. Actualizar descripciones de las imágenes restantes
+    List<PostImage> remaining = post.getImages().stream()
+            .filter(img -> keepImageIds.contains(img.getId()))
+            .toList();
+
+    for (int i = 0; i < remaining.size() && i < descriptions.size(); i++) {
+        remaining.get(i).setDescription(descriptions.get(i));
+    }
+
+    // 🆕 3. Subir nuevas imágenes (si existen)
+    if (newImages != null && newImages.length > 0) {
+        for (MultipartFile file : newImages) {
+            try {
+                var upload = cloudinaryService.uploadFile(file);
+                PostImage newImg = PostImage.builder()
+                        .url(upload.getUrl())
+                        .publicId(upload.getPublicId())
+                        .description("") // descripción vacía inicialmente
+                        .post(post)
+                        .build();
+                postImageRepository.save(newImg);
+            } catch (IOException e) {
+                throw new RuntimeException("Error subiendo imagen a Cloudinary", e);
+            }
+        }
+    }
+
+    // 💾 4. Guardar y devolver
+    post = postRepository.save(post);
+    return postMapper.toResponse(post);
+}
+
 
     @Override
     @Transactional
