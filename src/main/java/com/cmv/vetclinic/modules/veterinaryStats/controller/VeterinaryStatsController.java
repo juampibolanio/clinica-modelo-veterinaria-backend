@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentCount;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentsByPeriod;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.AveragePetAge;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.DiagnosisBySpecies;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsByGender;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsBySpecies;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsPerOwner;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.TopDiagnosis;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.TopProduct;
@@ -63,5 +68,43 @@ public class VeterinaryStatsController {
     public ResponseEntity<List<TopDiagnosis>> topDiagnoses(
             @RequestParam(required = false) Integer limit) {
         return ResponseEntity.ok(service.getTopDiagnoses(limit));
+    }
+
+    // STAT-06
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/pets-by-species")
+    public ResponseEntity<List<PetsBySpecies>> petsBySpecies() {
+        return ResponseEntity.ok(service.getPetsBySpecies());
+    }
+
+    // STAT-07
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/pets-by-gender")
+    public ResponseEntity<List<PetsByGender>> petsByGender() {
+        return ResponseEntity.ok(service.getPetsByGender());
+    }
+
+    // STAT-08
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/appointments-by-period")
+    public ResponseEntity<List<AppointmentsByPeriod>> appointmentsByPeriod(
+            @RequestParam(defaultValue = "month") String type,
+            @RequestParam(required = false) Integer year) {
+        return ResponseEntity.ok(service.getAppointmentsByPeriod(type, year));
+    }
+
+    // STAT-09
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/average-pet-age")
+    public ResponseEntity<AveragePetAge> averagePetAge() {
+        return ResponseEntity.ok(service.getAveragePetAge());
+    }
+
+    // STAT-10
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/top-diagnoses-by-species")
+    public ResponseEntity<List<DiagnosisBySpecies>> topDiagnosesBySpecies(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(service.getTopDiagnosesBySpecies(limit));
     }
 }
