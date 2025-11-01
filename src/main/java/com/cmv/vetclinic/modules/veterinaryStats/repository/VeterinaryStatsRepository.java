@@ -13,7 +13,7 @@ public class VeterinaryStatsRepository {
     private EntityManager entityManager;
 
     // ------------------------------------------------------
-    // STAT-01 Turnos por veterinario
+    // STAT-01 Appointments count by veterinarian
     // ------------------------------------------------------
     public List<AppointmentCount> countAppointmentsByVet() {
         return entityManager.createQuery("""
@@ -30,7 +30,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-02 Vacunas aplicadas por mes
+    // STAT-02 Vaccines applied per month
     // ------------------------------------------------------
     public List<VaccinesPerMonth> vaccinesAppliedPerMonth(Integer year) {
         return entityManager.createQuery("""
@@ -49,7 +49,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-03 Productos más usados
+    // STAT-03 Products most used
     // ------------------------------------------------------
     public List<TopProduct> topUsedProducts() {
         return entityManager.createQuery("""
@@ -64,7 +64,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-04 Mascotas por dueño
+    // STAT-04 pets per owner
     // ------------------------------------------------------
     public List<PetsPerOwner> petsPerOwner() {
         return entityManager.createQuery("""
@@ -81,7 +81,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-05 Diagnósticos más frecuentes
+    // STAT-05 diagnosis most frequent
     // ------------------------------------------------------
     public List<TopDiagnosis> topDiagnoses() {
         return entityManager.createQuery("""
@@ -98,7 +98,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-06 Mascotas por especie
+    // STAT-06 pets by species
     // ------------------------------------------------------
     public List<PetsBySpecies> petsBySpecies() {
         return entityManager.createQuery("""
@@ -113,7 +113,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-07 Mascotas por género
+    // STAT-07 pets by gender
     // ------------------------------------------------------
     public List<PetsByGender> petsByGender() {
         return entityManager.createQuery("""
@@ -128,7 +128,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-08a Turnos por mes
+    // STAT-08a Appointments by months
     // ------------------------------------------------------
     public List<AppointmentsByPeriod> appointmentsByMonth(Integer year) {
         return entityManager.createQuery("""
@@ -150,7 +150,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-08b Turnos por semana
+    // STAT-08b Appointments by week
     // ------------------------------------------------------
     public List<AppointmentsByPeriod> appointmentsByWeek(Integer year) {
         return entityManager.createQuery("""
@@ -168,7 +168,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-09 Promedio de edad de mascotas
+    // STAT-09 Average pet age 
     // ------------------------------------------------------
     public AveragePetAge averagePetAge() {
         Double avg = entityManager.createQuery(
@@ -183,7 +183,7 @@ public class VeterinaryStatsRepository {
     }
 
     // ------------------------------------------------------
-    // STAT-10 Diagnósticos más frecuentes por especie
+    // STAT-10 Diagnosis most frequent by species
     // ------------------------------------------------------
     public List<DiagnosisBySpecies> topDiagnosesBySpecies(Integer limit) {
         return entityManager.createQuery("""

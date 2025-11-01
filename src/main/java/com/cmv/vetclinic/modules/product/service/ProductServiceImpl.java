@@ -13,6 +13,7 @@ import com.cmv.vetclinic.modules.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 
@@ -32,7 +33,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         CategoryProduct category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new InvalidProductDataException("Category not found with id: " + request.getCategoryId()));
+                .orElseThrow(() -> new InvalidProductDataException(
+                        "Category not found with id: " + request.getCategoryId()));
 
         Product entity = mapper.toEntity(request);
         entity.setCategory(category);
@@ -55,12 +57,13 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
         if (!entity.getName().equalsIgnoreCase(request.getName()) &&
-            repository.existsByNameIgnoreCase(request.getName())) {
+                repository.existsByNameIgnoreCase(request.getName())) {
             throw new DuplicateProductException(request.getName());
         }
 
         CategoryProduct category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new InvalidProductDataException("Category not found with id: " + request.getCategoryId()));
+                .orElseThrow(() -> new InvalidProductDataException(
+                        "Category not found with id: " + request.getCategoryId()));
 
         mapper.updateEntity(entity, request);
         entity.setCategory(category);
@@ -90,7 +93,8 @@ public class ProductServiceImpl implements ProductService {
                 case "categoryId" -> {
                     if (value != null) {
                         CategoryProduct category = categoryRepository.findById(Long.valueOf(value.toString()))
-                                .orElseThrow(() -> new InvalidProductDataException("Category not found with id: " + value));
+                                .orElseThrow(
+                                        () -> new InvalidProductDataException("Category not found with id: " + value));
                         entity.setCategory(category);
                     }
                 }
@@ -113,7 +117,43 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponse> list(String keyword, Pageable pageable) {
-        Page<Product> page = repository.findAll(pageable);
+        Page<Product> page;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            page = repository.searchByKeyword(keyword.trim(), pageable);
+        } else {
+            page = repository.findAll(pageable);
+        }
+
         return page.map(mapper::toResponse);
     }
+
+    @Override
+    public Page<ProductResponse> listFiltered(
+            String name,
+            String type,
+            String category,
+            int page,
+            int size,
+            String sortBy,
+            String direction) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<Product> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        Specification<Product> nameSpec = ProductSpecification.nameContains(name);
+        Specification<Product> typeSpec = ProductSpecification.typeEquals(type);
+        Specification<Product> categorySpec = ProductSpecification.categoryEquals(category);
+
+        if (nameSpec != null) spec = spec.and(nameSpec);
+        if (typeSpec != null) spec = spec.and(typeSpec);
+        if (categorySpec != null) spec = spec.and(categorySpec);
+
+        Page<Product> pageResult = repository.findAll(spec, pageable);
+        return pageResult.map(mapper::toResponse);
+    }
+
 }

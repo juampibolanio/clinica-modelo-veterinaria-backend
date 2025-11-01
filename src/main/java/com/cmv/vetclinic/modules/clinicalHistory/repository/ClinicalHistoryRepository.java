@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import com.cmv.vetclinic.modules.clinicalHistory.model.ClinicalHistory;
 
 public interface ClinicalHistoryRepository
-        extends JpaRepository<ClinicalHistory, Long>, JpaSpecificationExecutor<ClinicalHistory> {
+extends JpaRepository<ClinicalHistory, Long>, JpaSpecificationExecutor<ClinicalHistory> {
 
+        void deleteAllByPetId(Long petId);
 }

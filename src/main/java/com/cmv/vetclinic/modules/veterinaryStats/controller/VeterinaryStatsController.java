@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentCount;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentsByPeriod;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AveragePetAge;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.DashboardStatsResponse;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.DiagnosisBySpecies;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsByGender;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsBySpecies;
@@ -31,7 +32,6 @@ public class VeterinaryStatsController {
     private final VeterinaryStatsService service;
 
     // STAT-01
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/appointments-per-vet")
     public ResponseEntity<List<AppointmentCount>> appointmentsPerVet(
             @RequestParam(required = false) Integer limit) {
@@ -39,7 +39,6 @@ public class VeterinaryStatsController {
     }
 
     // STAT-02
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/vaccines-per-month")
     public ResponseEntity<List<VaccinesPerMonth>> vaccinesPerMonth(
             @RequestParam(required = false) Integer year) {
@@ -47,7 +46,6 @@ public class VeterinaryStatsController {
     }
 
     // STAT-03
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/top-products")
     public ResponseEntity<List<TopProduct>> topProducts(
             @RequestParam(required = false) Integer limit) {
@@ -55,7 +53,6 @@ public class VeterinaryStatsController {
     }
 
     // STAT-04 (solo ADMIN)
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/pets-per-owner")
     public ResponseEntity<List<PetsPerOwner>> petsPerOwner(
             @RequestParam(required = false) Integer limit) {
@@ -71,21 +68,18 @@ public class VeterinaryStatsController {
     }
 
     // STAT-06
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/pets-by-species")
     public ResponseEntity<List<PetsBySpecies>> petsBySpecies() {
         return ResponseEntity.ok(service.getPetsBySpecies());
     }
 
     // STAT-07
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/pets-by-gender")
     public ResponseEntity<List<PetsByGender>> petsByGender() {
         return ResponseEntity.ok(service.getPetsByGender());
     }
 
     // STAT-08
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/appointments-by-period")
     public ResponseEntity<List<AppointmentsByPeriod>> appointmentsByPeriod(
             @RequestParam(defaultValue = "month") String type,
@@ -101,10 +95,15 @@ public class VeterinaryStatsController {
     }
 
     // STAT-10
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/top-diagnoses-by-species")
     public ResponseEntity<List<DiagnosisBySpecies>> topDiagnosesBySpecies(
             @RequestParam(required = false) Integer limit) {
         return ResponseEntity.ok(service.getTopDiagnosesBySpecies(limit));
+    }
+
+    // DASHBOARD
+    @GetMapping("/dashboard")
+    public DashboardStatsResponse getDashboard() {
+        return service.getDashboardStats();
     }
 }

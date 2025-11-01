@@ -10,5 +10,5 @@ import com.cmv.vetclinic.modules.pet.model.Pet;
 public interface PetRepository extends JpaRepository<Pet, Long>, JpaSpecificationExecutor<Pet> {
 
     List<Pet> findAllByOwnerId(Long ownerId);
-    
+    void deleteAllByOwnerId(Long ownerId);
 }

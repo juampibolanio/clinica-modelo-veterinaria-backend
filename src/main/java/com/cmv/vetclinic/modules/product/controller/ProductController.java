@@ -38,14 +38,27 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> list(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction
-    ) {
-        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+            @RequestParam(defaultValue = "asc") String direction) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(page, size, sort);
-        return ResponseEntity.ok(service.list(null, pageable));
+
+        // 🔹 si vienen filtros específicos, usa Specification
+        if (name != null || type != null || category != null) {
+            return ResponseEntity.ok(service.listFiltered(name, type, category, page, size, sortBy, direction));
+        }
+
+        // 🔹 si solo hay keyword, usa búsqueda general
+        return ResponseEntity.ok(service.list(keyword, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")

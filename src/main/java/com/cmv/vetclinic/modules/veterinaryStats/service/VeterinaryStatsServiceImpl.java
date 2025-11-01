@@ -1,13 +1,24 @@
 package com.cmv.vetclinic.modules.veterinaryStats.service;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.temporal.WeekFields;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cmv.vetclinic.modules.appliedVaccine.repository.AppliedVaccineRepository;
+import com.cmv.vetclinic.modules.appointment.repository.AppointmentRepository;
+import com.cmv.vetclinic.modules.owner.repository.OwnerRepository;
+import com.cmv.vetclinic.modules.pet.repository.PetRepository;
+import com.cmv.vetclinic.modules.product.repository.ProductRepository;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentCount;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AppointmentsByPeriod;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.AveragePetAge;
+import com.cmv.vetclinic.modules.veterinaryStats.dto.DashboardStatsResponse;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.DiagnosisBySpecies;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsByGender;
 import com.cmv.vetclinic.modules.veterinaryStats.dto.PetsBySpecies;
@@ -25,6 +36,11 @@ import lombok.RequiredArgsConstructor;
 public class VeterinaryStatsServiceImpl implements VeterinaryStatsService {
 
     private final VeterinaryStatsRepository repo;
+    private final OwnerRepository ownerRepository;
+    private final PetRepository petRepository;
+    private final ProductRepository productRepository;
+    private final AppliedVaccineRepository appliedVaccineRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     public List<AppointmentCount> getAppointmentsPerVet(Integer limit) {
@@ -76,7 +92,7 @@ public class VeterinaryStatsServiceImpl implements VeterinaryStatsService {
         if ("week".equalsIgnoreCase(type)) {
             return repo.appointmentsByWeek(year);
         }
-        return repo.appointmentsByMonth(year); // por defecto mensual
+        return repo.appointmentsByMonth(year); 
     }
 
     @Override
@@ -87,5 +103,44 @@ public class VeterinaryStatsServiceImpl implements VeterinaryStatsService {
     @Override
     public List<DiagnosisBySpecies> getTopDiagnosesBySpecies(Integer limit) {
         return repo.topDiagnosesBySpecies(limit);
+    }
+
+    @Override
+    public DashboardStatsResponse getDashboardStats() {
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate startOfMonth = currentMonth.atDay(1);
+        LocalDate endOfMonth = currentMonth.atEndOfMonth();
+
+        long totalOwners = ownerRepository.count();
+        long totalPets = petRepository.count();
+        long totalProducts = productRepository.count();
+        long vaccinesApplied = appliedVaccineRepository.count();
+        long appointmentsThisMonth = appointmentRepository.countByDateBetween(startOfMonth, endOfMonth);
+
+        var weekFields = WeekFields.ISO;
+        List<DashboardStatsResponse.WeekAppointments> byWeek = appointmentRepository
+                .findByDateBetween(startOfMonth, endOfMonth)
+                .stream()
+                .filter(a -> a.getDate() != null)
+                .collect(Collectors.groupingBy(
+                        a -> a.getDate().get(weekFields.weekOfMonth()),
+                        Collectors.counting()))
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> DashboardStatsResponse.WeekAppointments.builder()
+                        .week("Semana " + e.getKey())
+                        .count(e.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return DashboardStatsResponse.builder()
+                .totalOwners(totalOwners)
+                .totalPets(totalPets)
+                .totalProducts(totalProducts)
+                .vaccinesApplied(vaccinesApplied)
+                .appointmentsThisMonth(appointmentsThisMonth)
+                .appointmentsByWeek(byWeek)
+                .build();
     }
 }

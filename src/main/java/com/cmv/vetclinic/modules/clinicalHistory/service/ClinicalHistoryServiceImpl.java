@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.cmv.vetclinic.exceptions.ClinicalHistoryExceptions.ClinicalHistoryNotFoundException;
 import com.cmv.vetclinic.exceptions.ClinicalHistoryExceptions.InvalidClinicalHistoryDataException;
+import com.cmv.vetclinic.modules.appliedVaccine.repository.AppliedVaccineRepository;
 import com.cmv.vetclinic.modules.clinicalHistory.dto.ClinicalHistoryRequest;
 import com.cmv.vetclinic.modules.clinicalHistory.dto.ClinicalHistoryResponse;
 import com.cmv.vetclinic.modules.clinicalHistory.mapper.ClinicalHistoryMapper;
@@ -30,6 +31,7 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
     private final ClinicalHistoryMapper mapper;
     private final PetRepository petRepository;
     private final UserRepository userRepository;
+    private final AppliedVaccineRepository appliedVaccineRepository;
 
     @Override
     @Transactional
@@ -105,16 +107,45 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
                 case "consultationReason" -> existing.setConsultationReason((String) value);
                 case "diagnosis" -> existing.setDiagnosis((String) value);
                 case "treatment" -> existing.setTreatment((String) value);
+                case "observations" -> existing.setObservations((String) value);
+
                 case "date" -> {
                     if (value != null) {
-                        // Convertir el valor a LocalDate si viene como String
                         LocalDate parsedDate = value instanceof String
                                 ? LocalDate.parse((String) value)
                                 : (LocalDate) value;
                         existing.setDate(parsedDate);
                     }
                 }
-                case "observations" -> existing.setObservations((String) value);
+
+                // ✅ Nuevo: veterinario
+                case "veterinarianId" -> {
+                    if (value != null) {
+                        Long vetId = ((Number) value).longValue();
+                        User vet = userRepository.findById(vetId)
+                                .orElseThrow(() -> new InvalidClinicalHistoryDataException(
+                                        "Veterinarian not found with id: " + vetId));
+                        existing.setVeterinarian(vet);
+                    }
+                }
+
+                // ✅ Nuevo: mascota
+                case "petId" -> {
+                    if (value != null) {
+                        Long petId = ((Number) value).longValue();
+                        Pet pet = petRepository.findById(petId)
+                                .orElseThrow(() -> new InvalidClinicalHistoryDataException(
+                                        "Pet not found with id: " + petId));
+                        existing.setPet(pet);
+                    }
+                }
+
+                // ⚙️ Ignora productos usados por ahora
+                case "usedProductIds" -> {
+                    // si aún no implementaste relación con productos, no hacer nada
+                    System.out.println("Ignoring usedProductIds in patch (not yet implemented)");
+                }
+
                 default -> throw new InvalidClinicalHistoryDataException("Invalid field: " + field);
             }
         });
@@ -128,6 +159,11 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
     public void delete(Long id) {
         ClinicalHistory ch = repository.findById(id)
                 .orElseThrow(() -> new ClinicalHistoryNotFoundException(id));
+
+        // 🧩 Eliminar vacunas vinculadas a esta historia clínica
+        appliedVaccineRepository.deleteAllByClinicalHistoryId(id);
+
+        // 🧩 Luego eliminar la historia
         repository.delete(ch);
     }
 

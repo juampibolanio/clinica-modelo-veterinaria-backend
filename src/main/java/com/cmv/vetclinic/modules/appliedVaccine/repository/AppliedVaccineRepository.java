@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 import com.cmv.vetclinic.modules.appliedVaccine.model.AppliedVaccine;
 
 @Repository
-public interface AppliedVaccineRepository extends JpaRepository<AppliedVaccine, Long>, JpaSpecificationExecutor<AppliedVaccine> {
-    
+public interface AppliedVaccineRepository
+        extends JpaRepository<AppliedVaccine, Long>, JpaSpecificationExecutor<AppliedVaccine> {
+    void deleteAllByPetId(Long petId);
+
+    void deleteAllByClinicalHistoryId(Long clinicalHistoryId);
 }

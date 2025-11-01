@@ -2,6 +2,7 @@ package com.cmv.vetclinic.modules.appointment.repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,4 +18,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
 
     @EntityGraph(attributePaths = {"veterinarian", "owner", "pet"})
     Optional<Appointment> findWithRelationsById(Long id);
+
+    long countByDateBetween(LocalDate start, LocalDate end);
+
+    List<Appointment> findByDateBetween(LocalDate start, LocalDate end);
+    void deleteAllByPetId(Long petId);
+
 }

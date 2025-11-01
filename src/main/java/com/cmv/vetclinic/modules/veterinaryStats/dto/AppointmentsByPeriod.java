@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AppointmentsByPeriod {
-    private final String period; // Ej: "2025-01" o "Semana 15"
+    private final String period; 
     private final Long totalAppointments;
 }

@@ -8,7 +8,10 @@ import java.util.stream.Collectors;
 import com.cmv.vetclinic.exceptions.OwnerExceptions.OwnerNotFoundException;
 import com.cmv.vetclinic.exceptions.PetExceptions.InvalidPetDataException;
 import com.cmv.vetclinic.exceptions.PetExceptions.PetNotFoundException;
-import com.cmv.vetclinic.exceptions.PetExceptions.PetsForOwnerNotFoundException;
+import com.cmv.vetclinic.modules.appliedVaccine.repository.AppliedVaccineRepository;
+import com.cmv.vetclinic.modules.appointment.model.Appointment;
+import com.cmv.vetclinic.modules.appointment.repository.AppointmentRepository;
+import com.cmv.vetclinic.modules.clinicalHistory.repository.ClinicalHistoryRepository;
 import com.cmv.vetclinic.modules.owner.model.Owner;
 import com.cmv.vetclinic.modules.owner.repository.OwnerRepository;
 import com.cmv.vetclinic.modules.pet.dto.PetRequest;
@@ -36,6 +39,9 @@ public class PetServiceImpl implements PetService {
     private final PetRepository petRepository;
     private final OwnerRepository ownerRepository;
     private final PetMapper petMapper;
+    private final AppliedVaccineRepository appliedVaccineRepository;
+    private final ClinicalHistoryRepository clinicalHistoryRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     public PetResponse createPet(PetRequest request) {
@@ -112,7 +118,6 @@ public class PetServiceImpl implements PetService {
                 .orElseThrow(() -> new OwnerNotFoundException(ownerId));
 
         List<Pet> pets = petRepository.findAllByOwnerId(owner.getId());
-
 
         return pets.stream()
                 .map(petMapper::toResponse)
@@ -191,9 +196,21 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional
     public void deletePet(Long id) {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new PetNotFoundException(id));
+
+        // 🧩 1. Eliminar vacunas aplicadas de esta mascota
+        appliedVaccineRepository.deleteAllByPetId(id);
+
+        // 🧩 2. Eliminar historias clínicas de esta mascota
+        clinicalHistoryRepository.deleteAllByPetId(id);
+
+        // 3️⃣ Eliminar turnos (appointments)
+        appointmentRepository.deleteAllByPetId(id);
+
+        // 🧩 3. Eliminar la mascota
         petRepository.delete(pet);
     }
 

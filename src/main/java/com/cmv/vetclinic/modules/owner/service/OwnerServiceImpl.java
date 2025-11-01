@@ -18,6 +18,9 @@ import com.cmv.vetclinic.modules.owner.dto.OwnerResponse;
 import com.cmv.vetclinic.modules.owner.mapper.OwnerMapper;
 import com.cmv.vetclinic.modules.owner.model.Owner;
 import com.cmv.vetclinic.modules.owner.repository.OwnerRepository;
+import com.cmv.vetclinic.modules.pet.model.Pet;
+import com.cmv.vetclinic.modules.pet.repository.PetRepository;
+import com.cmv.vetclinic.modules.pet.service.PetService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,8 @@ public class OwnerServiceImpl implements OwnerService {
 
         private final OwnerRepository ownerRepository;
         private final OwnerMapper ownerMapper;
+        private final PetRepository petRepository;
+        private final PetService petService;
 
         public OwnerResponse createOwner(OwnerRequest request) {
                 if (request.getEmail() != null && !request.getEmail().contains("@")) {
@@ -129,9 +134,19 @@ public class OwnerServiceImpl implements OwnerService {
         }
 
         @Override
+        @Transactional
         public void deleteOwner(Long id) {
                 Owner owner = ownerRepository.findById(id)
                                 .orElseThrow(() -> new OwnerNotFoundException(id));
+
+                // 1️⃣ Eliminar primero todas las mascotas y sus dependencias
+                List<Pet> pets = petRepository.findAllByOwnerId(owner.getId());
+                for (Pet pet : pets) {
+                        // Este método ya borra vacunas, historias y turnos internamente
+                        petService.deletePet(pet.getId());
+                }
+
+                // 2️⃣ Eliminar finalmente al dueño
                 ownerRepository.delete(owner);
         }
 

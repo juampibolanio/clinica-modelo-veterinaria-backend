@@ -10,9 +10,23 @@ import com.cmv.vetclinic.modules.product.dto.ProductResponse;
 
 public interface ProductService {
     ProductResponse create(ProductRequest request);
+
     ProductResponse getById(Long id);
+
     ProductResponse update(Long id, ProductRequest request);
+
     ProductResponse patch(Long id, Map<String, Object> updates);
+
     void delete(Long id);
+
     Page<ProductResponse> list(String keyword, Pageable pageable);
+
+    Page<ProductResponse> listFiltered(
+            String name,
+            String type,
+            String category,
+            int page,
+            int size,
+            String sortBy,
+            String direction);
 }
