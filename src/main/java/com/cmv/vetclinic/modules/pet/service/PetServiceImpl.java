@@ -9,7 +9,6 @@ import com.cmv.vetclinic.exceptions.OwnerExceptions.OwnerNotFoundException;
 import com.cmv.vetclinic.exceptions.PetExceptions.InvalidPetDataException;
 import com.cmv.vetclinic.exceptions.PetExceptions.PetNotFoundException;
 import com.cmv.vetclinic.modules.appliedVaccine.repository.AppliedVaccineRepository;
-import com.cmv.vetclinic.modules.appointment.model.Appointment;
 import com.cmv.vetclinic.modules.appointment.repository.AppointmentRepository;
 import com.cmv.vetclinic.modules.clinicalHistory.repository.ClinicalHistoryRepository;
 import com.cmv.vetclinic.modules.owner.model.Owner;
@@ -201,16 +200,12 @@ public class PetServiceImpl implements PetService {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new PetNotFoundException(id));
 
-        // 🧩 1. Eliminar vacunas aplicadas de esta mascota
         appliedVaccineRepository.deleteAllByPetId(id);
 
-        // 🧩 2. Eliminar historias clínicas de esta mascota
         clinicalHistoryRepository.deleteAllByPetId(id);
 
-        // 3️⃣ Eliminar turnos (appointments)
         appointmentRepository.deleteAllByPetId(id);
 
-        // 🧩 3. Eliminar la mascota
         petRepository.delete(pet);
     }
 

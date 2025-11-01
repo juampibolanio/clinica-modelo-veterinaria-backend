@@ -139,14 +139,11 @@ public class OwnerServiceImpl implements OwnerService {
                 Owner owner = ownerRepository.findById(id)
                                 .orElseThrow(() -> new OwnerNotFoundException(id));
 
-                // 1️⃣ Eliminar primero todas las mascotas y sus dependencias
                 List<Pet> pets = petRepository.findAllByOwnerId(owner.getId());
                 for (Pet pet : pets) {
-                        // Este método ya borra vacunas, historias y turnos internamente
                         petService.deletePet(pet.getId());
                 }
 
-                // 2️⃣ Eliminar finalmente al dueño
                 ownerRepository.delete(owner);
         }
 

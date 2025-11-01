@@ -118,7 +118,6 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
                     }
                 }
 
-                // ✅ Nuevo: veterinario
                 case "veterinarianId" -> {
                     if (value != null) {
                         Long vetId = ((Number) value).longValue();
@@ -129,7 +128,6 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
                     }
                 }
 
-                // ✅ Nuevo: mascota
                 case "petId" -> {
                     if (value != null) {
                         Long petId = ((Number) value).longValue();
@@ -140,9 +138,7 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
                     }
                 }
 
-                // ⚙️ Ignora productos usados por ahora
                 case "usedProductIds" -> {
-                    // si aún no implementaste relación con productos, no hacer nada
                     System.out.println("Ignoring usedProductIds in patch (not yet implemented)");
                 }
 
@@ -160,10 +156,8 @@ public class ClinicalHistoryServiceImpl implements ClinicalHistoryService {
         ClinicalHistory ch = repository.findById(id)
                 .orElseThrow(() -> new ClinicalHistoryNotFoundException(id));
 
-        // 🧩 Eliminar vacunas vinculadas a esta historia clínica
         appliedVaccineRepository.deleteAllByClinicalHistoryId(id);
 
-        // 🧩 Luego eliminar la historia
         repository.delete(ch);
     }
 
