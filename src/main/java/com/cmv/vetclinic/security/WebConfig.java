@@ -13,10 +13,18 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
-                registry.addMapping("/**") 
-                        .allowedOrigins("http://localhost:5173", "http://localhost:5174") 
+                registry.addMapping("/**")
+                        .allowedOrigins(
+                                // Production
+                                "https://clinicamodeloveterinaria.site",
+                                "https://www.clinicamodeloveterinaria.site",
+                                "https://panel.clinicamodeloveterinaria.site",
+                                // local development
+                                "http://localhost:5173",
+                                "http://localhost:5174"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                        .allowedHeaders("*") 
+                        .allowedHeaders("*")
                         .allowCredentials(true)
                         .maxAge(3600);
             }
